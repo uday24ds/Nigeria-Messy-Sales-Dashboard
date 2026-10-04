@@ -1,0 +1,42 @@
+table DimState
+	lineageTag: 1d935275-703d-4a90-9ad6-74113d591d15
+
+	column State
+		dataType: string
+		lineageTag: 129dfa75-2ca1-491a-8adf-f7889709dcf0
+		summarizeBy: none
+		sourceColumn: State
+
+		annotation SummarizationSetBy = Automatic
+
+	column StateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6d165dd0-ebfe-4a72-953b-418e9354d256
+		summarizeBy: none
+		sourceColumn: StateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimState = m
+		mode: import
+		source =
+				let
+				    Source = stg_Sales,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"State"}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Removed Other Columns",{{"State", Text.Trim, type text}}),
+				    #"Cleaned Text" = Table.TransformColumns(#"Trimmed Text",{{"State", Text.Clean, type text}}),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Cleaned Text",{{"State", Text.Proper, type text}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Capitalized Each Word"),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "StateKey"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

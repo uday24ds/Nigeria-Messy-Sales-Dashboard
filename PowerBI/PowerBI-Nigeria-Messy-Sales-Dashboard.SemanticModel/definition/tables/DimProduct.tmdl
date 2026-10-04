@@ -1,0 +1,42 @@
+table DimProduct
+	lineageTag: 7c4af3dc-7850-477a-ba3b-88d188c7b649
+
+	column Product
+		dataType: string
+		lineageTag: 94835433-5eea-43f7-a71f-926397922414
+		summarizeBy: none
+		sourceColumn: Product
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e215324d-1bf8-43c1-9399-f69f0181b7ad
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimProduct = m
+		mode: import
+		source =
+				let
+				    Source = stg_Sales,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Product"}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Removed Other Columns",{{"Product", Text.Trim, type text}}),
+				    #"Cleaned Text" = Table.TransformColumns(#"Trimmed Text",{{"Product", Text.Clean, type text}}),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Cleaned Text",{{"Product", Text.Proper, type text}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Capitalized Each Word"),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "ProductKey"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

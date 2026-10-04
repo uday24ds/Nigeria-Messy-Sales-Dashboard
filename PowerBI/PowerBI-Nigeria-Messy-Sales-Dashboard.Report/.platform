@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "PowerBI-Nigeria-Messy-Sales-Dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "cd1a0cd0-4df4-43c5-bc57-17a795cf7893"
+  }
+}

@@ -1,0 +1,25 @@
+relationship 95c22c10-6fa8-44a4-a56b-1e43049a06d1
+	joinOnDateBehavior: datePartOnly
+	fromColumn: stg_Sales.'Sale Date'
+	toColumn: LocalDateTable_b81d3fb2-0cb1-4a6c-b9c0-e74f1a4b9b9b.Date
+
+relationship AutoDetected_0a4c2a7d-957c-424d-bdc0-73a6e04c5636
+	fromColumn: Fact_Sales.CustomerKey
+	toColumn: DimCustomer.CustomerKey
+
+relationship AutoDetected_dd1ca162-7f32-4067-94a1-b99bb0c07169
+	fromColumn: Fact_Sales.StateKey
+	toColumn: DimState.StateKey
+
+relationship AutoDetected_90255ebf-de38-4350-8801-fd65c62e155c
+	fromColumn: Fact_Sales.ProductKey
+	toColumn: DimProduct.ProductKey
+
+relationship AutoDetected_7d6eb531-e53a-4922-a332-a519ca164b04
+	fromColumn: Fact_Sales.ChannelKey
+	toColumn: DimChannel.ChannelKey
+
+relationship aaf5627c-b4f9-c368-21ae-48c6f30649f9
+	fromColumn: Fact_Sales.SaleDate
+	toColumn: DimDate.Date
+

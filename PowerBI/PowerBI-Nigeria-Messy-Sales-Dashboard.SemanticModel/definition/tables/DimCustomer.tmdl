@@ -1,0 +1,44 @@
+table DimCustomer
+	lineageTag: 0753b826-2a58-412d-8c4e-1ae602029566
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 49bf5072-d52b-4b4f-a189-b5a2d353aacb
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		annotation SummarizationSetBy = Automatic
+
+	column CustomerKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3eb7dab4-1118-484e-ac94-7b6198481604
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimCustomer = m
+		mode: import
+		source =
+				let
+				    Source = stg_Sales,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Customer Name"}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Removed Other Columns",{{"Customer Name", Text.Trim, type text}}),
+				    #"Cleaned Text" = Table.TransformColumns(#"Trimmed Text",{{"Customer Name", Text.Clean, type text}}),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Cleaned Text",{{"Customer Name", Text.Proper, type text}}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Capitalized Each Word","","Unknown Customer",Replacer.ReplaceValue,{"Customer Name"}),
+				    #"Removed Blank Rows" = Table.SelectRows(#"Replaced Value", each not List.IsEmpty(List.RemoveMatchingItems(Record.FieldValues(_), {"", null}))),
+				    #"Removed Duplicates" = Table.Distinct(#"Removed Blank Rows"),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "CustomerKey"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

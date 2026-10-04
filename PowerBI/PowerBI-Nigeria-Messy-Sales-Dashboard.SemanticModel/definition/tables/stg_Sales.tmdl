@@ -1,0 +1,130 @@
+table stg_Sales
+	isHidden
+	lineageTag: 56eb1c81-4a9c-43ef-830c-f7b9771a8c2b
+
+	column 'Customer Name'
+		dataType: string
+		isHidden
+		lineageTag: c6bcc39c-4aa6-4182-a290-4ff3118ba839
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column State
+		dataType: string
+		isHidden
+		lineageTag: f12a194c-e575-43b0-b702-e7f73ca50ec2
+		summarizeBy: none
+		sourceColumn: State
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column Product
+		dataType: string
+		isHidden
+		lineageTag: be77eda5-eb9e-4716-b49f-b2959757e414
+		summarizeBy: none
+		sourceColumn: Product
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Units Sold'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: c1f75f66-7dd1-40bf-9a6b-c998d292529c
+		summarizeBy: sum
+		sourceColumn: Units Sold
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Unit Price'
+		dataType: double
+		isHidden
+		lineageTag: dc85afd8-f6b0-4cdc-98ab-02a056625799
+		summarizeBy: sum
+		sourceColumn: Unit Price
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Total Sale'
+		dataType: double
+		isHidden
+		lineageTag: 3b9a97c1-3ad6-43f4-b362-4939f1abd863
+		summarizeBy: sum
+		sourceColumn: Total Sale
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Sale Date'
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: 5bd991ae-19a0-43d3-8bbb-0fbe09a75e06
+		summarizeBy: none
+		sourceColumn: Sale Date
+
+		variation Variation
+			isDefault
+			relationship: 95c22c10-6fa8-44a4-a56b-1e43049a06d1
+			defaultHierarchy: LocalDateTable_b81d3fb2-0cb1-4a6c-b9c0-e74f1a4b9b9b.'Date Hierarchy'
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Sales Channel'
+		dataType: string
+		isHidden
+		lineageTag: 2f509626-7a95-48e6-907c-804a1c1be230
+		summarizeBy: none
+		sourceColumn: Sales Channel
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Order ID'
+		dataType: string
+		isHidden
+		lineageTag: 81e043bf-2382-422f-86a0-255f74c98af2
+		summarizeBy: none
+		sourceColumn: Order ID
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition stg_Sales = m
+		mode: import
+		source =
+				let
+				  Source = Csv.Document(File.Contents("C:\Users\ASUS\Downloads\nigeria_messy_sales_dataset.csv"), [Delimiter = ",", Columns = 9, QuoteStyle = QuoteStyle.None]),
+				  #"Promoted headers" = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				  #"Changed column type" = Table.TransformColumnTypes(#"Promoted headers", {{"Customer Name", type text}, {"State", type text}, {"Product", type text}, {"Units Sold", Int64.Type}, {"Unit Price", type number}, {"Total Sale", type number}, {"Sale Date", type date}, {"Sales Channel", type text}, {"Order ID", type text}})
+				in
+				  #"Changed column type"
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

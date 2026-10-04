@@ -1,0 +1,43 @@
+table DimChannel
+	lineageTag: 06ec4709-da48-43ab-b21f-5ac438687317
+
+	column 'Sales Channel'
+		dataType: string
+		lineageTag: fea242ec-0ab3-4c93-a85e-8080682ba0d6
+		summarizeBy: none
+		sourceColumn: Sales Channel
+
+		annotation SummarizationSetBy = Automatic
+
+	column ChannelKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: bad2eb7e-00bd-4d44-bc74-857ad16edf1c
+		summarizeBy: none
+		sourceColumn: ChannelKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimChannel = m
+		mode: import
+		source =
+				let
+				    Source = stg_Sales,
+				    #"Removed Other Columns" = Table.SelectColumns(Source,{"Sales Channel"}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Removed Other Columns",{{"Sales Channel", Text.Trim, type text}}),
+				    #"Cleaned Text" = Table.TransformColumns(#"Trimmed Text",{{"Sales Channel", Text.Clean, type text}}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Cleaned Text","","Unknown",Replacer.ReplaceValue,{"Sales Channel"}),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Replaced Value",{{"Sales Channel", Text.Proper, type text}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Capitalized Each Word"),
+				    #"Added Index" = Table.AddIndexColumn(#"Removed Duplicates", "Index", 1, 1, Int64.Type),
+				    #"Renamed Columns" = Table.RenameColumns(#"Added Index",{{"Index", "ChannelKey"}})
+				in
+				    #"Renamed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

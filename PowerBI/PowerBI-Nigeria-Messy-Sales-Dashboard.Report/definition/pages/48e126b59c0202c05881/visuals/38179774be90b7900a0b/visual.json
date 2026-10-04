@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "38179774be90b7900a0b",
+  "position": {
+    "x": 63.808103988341514,
+    "y": 0,
+    "z": 4000,
+    "height": 107.03294862560512,
+    "width": 1782.5102598033468,
+    "tabOrder": 4000
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Fact_Sales"
+                    }
+                  },
+                  "Property": "Market Analysis"
+                }
+              },
+              "queryRef": "Fact_Sales.Dynamic Title",
+              "nativeQueryRef": "Dynamic Title"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

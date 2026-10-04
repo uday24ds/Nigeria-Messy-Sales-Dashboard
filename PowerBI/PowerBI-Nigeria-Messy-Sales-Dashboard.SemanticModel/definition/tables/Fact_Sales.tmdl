@@ -1,0 +1,274 @@
+table Fact_Sales
+	lineageTag: fd0fba33-c700-4965-9a7f-895249dc347d
+
+	measure 'Total Sales' = SUM(Fact_Sales[TotalSale])
+		displayFolder: Sales
+		lineageTag: 235a0b8a-a7f6-4a87-aac5-99289566a05c
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Units' =
+			
+			SUM(Fact_Sales[UnitsSold])
+		formatString: 0
+		displayFolder: Transactions
+		lineageTag: a48b8488-0edb-482d-87ae-155e211dc225
+
+	measure 'Total Transactions' =
+			
+			COUNTROWS(Fact_Sales)
+		formatString: 0
+		displayFolder: Transactions
+		lineageTag: b0af3466-287d-40f4-acea-7f4d5bc6b32f
+
+	measure 'Unique Customer' = DISTINCTCOUNT(Fact_Sales[CustomerKey])
+		formatString: 0
+		displayFolder: Customers
+		lineageTag: 48f2c561-5519-48cf-81f3-ff2edb14cbf5
+
+	measure 'Previous Year Sales' = CALCULATE([Total Sales],SAMEPERIODLASTYEAR(DimDate[Date]))
+		displayFolder: Time Intelligence
+		lineageTag: 205fd38c-307f-4f46-b64e-6194e044f907
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Average Unit Price' = AVERAGE(Fact_Sales[UnitPrice])
+		displayFolder: Sales
+		lineageTag: fba34615-279c-4b18-b1dc-08642c953773
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Previous Month Sales' = CALCULATE([Total Sales], DATEADD(DimDate[Date],-1,MONTH))
+		displayFolder: Time Intelligence
+		lineageTag: 94331f16-f408-4720-af4d-6421ec4a5489
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales YTD' =
+			
+			TOTALYTD(
+			    [Total Sales],
+			    DimDate[Date]
+			)
+		displayFolder: Time Intelligence
+		lineageTag: ab31c753-a566-419a-9c96-c125efe1e4a3
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'YOY Sales Growth' = DIVIDE([Total Sales]-[Previous Month Sales],[Previous Month Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Time Intelligence
+		lineageTag: 7a36c125-f8d6-41ba-b181-936f77d88348
+
+	measure 'MOM sales growth' = DIVIDE(([Total Sales]-[Previous Month Sales]),[Previous Month Sales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Time Intelligence
+		lineageTag: fea33ae5-f19e-4b4d-8438-2a02a953b44a
+
+	measure 'Product Sales Rank' =
+			
+			RANKX(
+			    ALL(DimProduct[Product]),
+			    [Total Sales],
+			    ,
+			    DESC,
+			    DENSE
+			)
+		formatString: 0
+		displayFolder: Products
+		lineageTag: 24374b0d-ba86-4b9c-940c-8839449c72fd
+
+	measure 'Customer Sales Rank' =
+			
+			RANKX(
+			    ALL(DimCustomer[Customer Name]),
+			    [Total Sales],
+			    ,
+			    DESC,
+			    DENSE
+			)
+		formatString: 0
+		displayFolder: Customers
+		lineageTag: a0f52024-8f38-414e-b50e-ccbebc4b09e5
+
+	measure 'Missing Units' = CALCULATE(COUNTROWS(Fact_Sales),ISBLANK(Fact_Sales[UnitsSold]))
+		formatString: 0
+		displayFolder: Data Quality
+		lineageTag: 35d3cf4f-8036-4170-8fb9-9bde98777c32
+
+	measure 'Sales MTD' = TOTALMTD([Total Sales],DimDate[Date])
+		displayFolder: Time Intelligence
+		lineageTag: ef5cb9b9-faf8-4808-bdd0-3757f130423e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Sales Data Completeness %' =
+			
+			DIVIDE(
+			    COUNTROWS(
+			        FILTER(
+			            Fact_Sales,
+			            NOT ISBLANK(Fact_Sales[TotalSale])
+			        )
+			    ),
+			    COUNTROWS(Fact_Sales)
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Data Quality
+		lineageTag: 8b18b7b3-ede5-4c71-bd95-1e82fc51d228
+
+	measure 'Sales Contribution %' =
+			
+			DIVIDE(
+			    [Total Sales],
+			    CALCULATE(
+			        [Total Sales],
+			        ALLSELECTED()
+			    )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Products
+		lineageTag: b8f2a2df-8a6d-4753-b641-bd01b70ffd36
+
+	measure 'Market Analysis' = "Sales Performance Dashboard- " & COALESCE(SELECTEDVALUE(DimProduct[Product]),"All Products") & " | " & COALESCE(SELECTEDVALUE(DimChannel[Sales Channel]),"All Channels")
+		lineageTag: 00c9d680-7302-470c-bea1-eb635d5d0562
+
+	measure 'Channels Details' = "Sales Performance Dashboard- " & COALESCE(SELECTEDVALUE(DimChannel[Sales Channel]),"All Channels")
+		lineageTag: 5cbd6fc2-6ebb-44d8-b419-c8a9597756cc
+
+	measure 'Products Details' = "Sales Performance Dashboard- " & COALESCE(SELECTEDVALUE(DimProduct[Product]),"All Products")
+		lineageTag: 1b07cec3-3b19-47d7-ab9f-f99d58e7c63a
+
+	column OrderID
+		dataType: string
+		lineageTag: 19278b23-e56d-473b-99b9-66ea18246b60
+		summarizeBy: none
+		sourceColumn: OrderID
+
+		annotation SummarizationSetBy = Automatic
+
+	column SaleDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 14b4aebc-75f8-431b-8a66-656a22c8fe8d
+		summarizeBy: none
+		sourceColumn: SaleDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column UnitsSold
+		dataType: int64
+		formatString: 0
+		lineageTag: 947be61d-e96f-4f5f-8942-24f7a2812f5b
+		summarizeBy: sum
+		sourceColumn: UnitsSold
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: double
+		lineageTag: 3dbc1c4e-23ff-4b69-8753-8df4cddbbcc3
+		summarizeBy: sum
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column TotalSale
+		dataType: double
+		lineageTag: 96baa108-edf2-492f-9766-85f961bc2768
+		summarizeBy: sum
+		sourceColumn: TotalSale
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CustomerKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 823014cc-5d51-4d73-923c-4d6a51544198
+		summarizeBy: none
+		sourceColumn: CustomerKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column StateKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 16c15ad5-a7a4-4344-a09a-7a98852dc97e
+		summarizeBy: none
+		sourceColumn: StateKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 95e608e3-b6a3-422a-82ff-ac0072fe856a
+		summarizeBy: none
+		sourceColumn: ProductKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column ChannelKey
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: da59341f-1cff-4072-98ef-acc076b13596
+		summarizeBy: none
+		sourceColumn: ChannelKey
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Fact_Sales = m
+		mode: import
+		source =
+				let
+				    Source = stg_Sales,
+				    #"Renamed Columns" = Table.RenameColumns(Source,{{"Customer Name", "CustomerName"}, {"Units Sold", "UnitsSold"}, {"Unit Price", "UnitPrice"}, {"Total Sale", "TotalSale"}, {"Sale Date", "SaleDate"}, {"Sales Channel", "SalesChannel"}, {"Order ID", "OrderID"}}),
+				    #"Trimmed Text" = Table.TransformColumns(#"Renamed Columns",{{"CustomerName", Text.Trim, type text}, {"State", Text.Trim, type text}, {"Product", Text.Trim, type text}, {"SalesChannel", Text.Trim, type text}, {"OrderID", Text.Trim, type text}}),
+				    #"Cleaned Text" = Table.TransformColumns(#"Trimmed Text",{{"CustomerName", Text.Clean, type text}, {"State", Text.Clean, type text}, {"Product", Text.Clean, type text}, {"SalesChannel", Text.Clean, type text}, {"OrderID", Text.Clean, type text}}),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Cleaned Text",{{"Product", Text.Proper, type text}, {"CustomerName", Text.Proper, type text}, {"State", Text.Proper, type text}, {"SalesChannel", Text.Proper, type text}}),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Capitalized Each Word",{{"SaleDate", type date}}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Changed Type","","Unknown Customer",Replacer.ReplaceValue,{"CustomerName"}),
+				    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","","Unknown",Replacer.ReplaceValue,{"SalesChannel"}),
+				    #"Reordered Columns" = Table.ReorderColumns(#"Replaced Value1",{"CustomerName", "State", "Product", "SalesChannel", "OrderID", "SaleDate", "UnitsSold", "UnitPrice", "TotalSale"}),
+				    #"Added Custom" = Table.AddColumn(#"Reordered Columns", "FinalTotalSale", each if [TotalSale] <> null then [TotalSale]
+				else if [UnitsSold] <> null and [UnitPrice] <> null
+				then [UnitsSold] * [UnitPrice]
+				else null),
+				    #"Filtered Rows" = Table.SelectRows(#"Added Custom", each true),
+				    #"Removed Columns" = Table.RemoveColumns(#"Filtered Rows",{"FinalTotalSale"}),
+				    #"Merged Queries" = Table.NestedJoin(#"Removed Columns", {"CustomerName"}, DimCustomer, {"Customer Name"}, "DimCustomer", JoinKind.LeftOuter),
+				    #"Merged Queries1" = Table.NestedJoin(#"Merged Queries", {"State"}, DimState, {"State"}, "DimState", JoinKind.LeftOuter),
+				    #"Merged Queries2" = Table.NestedJoin(#"Merged Queries1", {"Product"}, DimProduct, {"Product"}, "DimProduct", JoinKind.LeftOuter),
+				    #"Merged Queries3" = Table.NestedJoin(#"Merged Queries2", {"SalesChannel"}, DimChannel, {"Sales Channel"}, "DimChannel", JoinKind.LeftOuter),
+				    #"Expanded DimCustomer" = Table.ExpandTableColumn(#"Merged Queries3", "DimCustomer", {"CustomerKey"}, {"DimCustomer.CustomerKey"}),
+				    #"Expanded DimState" = Table.ExpandTableColumn(#"Expanded DimCustomer", "DimState", {"StateKey"}, {"DimState.StateKey"}),
+				    #"Expanded DimProduct" = Table.ExpandTableColumn(#"Expanded DimState", "DimProduct", {"ProductKey"}, {"DimProduct.ProductKey"}),
+				    #"Expanded DimChannel" = Table.ExpandTableColumn(#"Expanded DimProduct", "DimChannel", {"ChannelKey"}, {"DimChannel.ChannelKey"}),
+				    #"Renamed Columns1" = Table.RenameColumns(#"Expanded DimChannel",{{"DimCustomer.CustomerKey", "CustomerKey"}, {"DimState.StateKey", "StateKey"}, {"DimProduct.ProductKey", "ProductKey"}, {"DimChannel.ChannelKey", "ChannelKey"}}),
+				    #"Reordered Columns1" = Table.ReorderColumns(#"Renamed Columns1",{"CustomerKey", "StateKey", "ProductKey", "ChannelKey", "CustomerName", "State", "Product", "SalesChannel", "OrderID", "SaleDate", "UnitsSold", "UnitPrice", "TotalSale"}),
+				    #"Removed Columns1" = Table.RemoveColumns(#"Reordered Columns1",{"CustomerName", "State", "Product", "SalesChannel"})
+				in
+				    #"Removed Columns1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
